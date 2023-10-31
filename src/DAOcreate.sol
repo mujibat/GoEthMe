@@ -7,9 +7,6 @@ contract CreateCampaignDAO {
     // balance of ether in the smart contract
     uint public DAOvoteNumbers;
     
-    // allow withdrawals
-    mapping(address=>uint) balances;
-    
     // proposal decision of voters 
     uint public decision;
 
@@ -92,7 +89,7 @@ contract CreateCampaignDAO {
     }
     // ends the vote
     // if DAO decided not to buy cupcakes members can withdraw deposited ether
-    function EndVote() public {
+    function EndVote(createGofundme(string memory _title, uint256 _fundingGoal, uint256 _durationTime)) public {
         require(
             block.timestamp > voteEndTime,
             "Vote not yet ended.");
@@ -102,18 +99,17 @@ contract CreateCampaignDAO {
             "Must count vote first");  
             
         require(
-            DAObalance >= 1 ether,
+            DAOvoteNumbers >= 4,
             "Not enough balance in DAO required to buy cupcake. Members may withdraw deposited ether.");
             
         require(
             decision == 0,
             "DAO decided to not buy cupcakes. Members may withdraw deposited ether."); 
             
-        if (DAObalance  < 1 ether) revert();
-            (bool success, ) = address(GoEthMeAddress).call{value: 1 ether}(abi.encodeWithSignature("purchase(uint256)", 1));
+        if (DAOvoteNumbers  < 4) revert();
+            (bool success, ) = address(GoEthMeAddress).call(abi.encodeWithSignature("createGofundme(string memory _title, uint256 _fundingGoal, uint256 _durationTime)", _title, _fundingGoal, _durationTime));
             require(success);
             
-        DAObalance = address(this).balance;
   
     }
 }
