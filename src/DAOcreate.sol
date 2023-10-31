@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.19;
+
 contract CreateCampaignDAO {
 
      address payable public GoEthMeAddress;
@@ -89,7 +93,7 @@ contract CreateCampaignDAO {
     }
     // ends the vote
     // if DAO decided not to buy cupcakes members can withdraw deposited ether
-    function EndVote(createGofundme(string memory _title, uint256 _fundingGoal, uint256 _durationTime)) public {
+    function EndVote(string memory _title, uint256 _fundingGoal, uint256 _durationTime) public {
         require(
             block.timestamp > voteEndTime,
             "Vote not yet ended.");
