@@ -3,6 +3,9 @@
 pragma solidity 0.8.19;
 
 import {RewardsNft} from "./RewardsNft.sol";
+import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+
+/// @title GoEthMe - A decentralized fundraising platform for creative projects.
 
 contract GoEthMe {
     struct GoFund {
@@ -70,6 +73,9 @@ contract GoEthMe {
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
 
+    /// @notice Contribute Ether to a GoFund campaign.
+    /// @param _ID The ID of the campaign to contribute to.
+
     function contributeEth(uint _ID) external payable {
         if (msg.value <= 0) revert InsufficientInput();
         GoFund storage fund = funder[_ID];
@@ -109,6 +115,9 @@ contract GoEthMe {
 
         emit GetContributedFunds(_ID, false);
     }
+
+    /// @notice End a campaign early, returning funds to contributors.
+    /// @param _ID The ID of the campaign to end early.
 
     function endCampaignEarly(uint _ID) external payable {
         GoFund storage fund = funder[_ID];
