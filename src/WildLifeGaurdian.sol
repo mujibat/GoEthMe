@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.19;
 
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
+
+/// @title WildLifeGuardianToken - A unique NFT contract for Wildlife Guardians.
 
 contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
@@ -14,11 +16,19 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     error AlreadyClaimed();
     error NotWhitelisted();
 
+    /// @dev Mapping to keep track of claimed tokens.
+
     mapping(address => bool) claimed;
 
+    /// @notice Constructor to initialize the contract.
+    /// @param _owner The address of the contract owner.
     constructor(
         address _owner
     ) ERC721("WildLife Guardian Token", "WGT") Ownable(_owner) {}
+
+    /// @notice Safely mints new tokens and assigns them to specified addresses.
+    /// @param to An array of addresses to receive the newly minted tokens.
+    /// @param tokenUri_ The token URI for the new tokens.
 
     function safeMint(
         address[] calldata to,
@@ -38,6 +48,12 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
             }
         }
     }
+
+    /// @notice Claims a token for an address using a Merkle proof.
+    /// @param _merkleProof The Merkle proof to verify the claim.
+    /// @param _account The address claiming the token.
+    /// @param _amount The amount to claim.
+    /// @return true if the claim is successful, false otherwise.
 
     function claimToken(
         bytes32[] calldata _merkleProof,
@@ -59,15 +75,24 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
         return true;
     }
 
+    /// @notice Adds a new Merkle root hash for token whitelisting.
+    /// @param _rootHash The new Merkle root hash.
+
     function addRootHash(bytes32 _rootHash) external onlyOwner {
         rootHash = _rootHash;
     }
+
+    /// @notice Burns a token by its ID.
+    /// @param tokenId The ID of the token to burn.
 
     function burn(uint256 tokenId) external onlyOwner {
         _burn(tokenId);
     }
 
     // function overrides
+
+    /// @dev Overrides the transferFrom function to disable transfers.
+
     function transferFrom(
         address from,
         address to,
@@ -76,11 +101,15 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
         revert("SoulBoundToken: transfer is disabled");
     }
 
+    /// @inheritdoc ERC721
+
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
+
+    /// @inheritdoc ERC721
 
     function supportsInterface(
         bytes4 interfaceId
