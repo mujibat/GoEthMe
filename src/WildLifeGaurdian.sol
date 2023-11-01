@@ -42,8 +42,7 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     function claimToken(
         bytes32[] calldata _merkleProof,
         address _account,
-        uint256 _amount,
-        string memory tokenUri_
+        uint256 _amount
     ) external returns (bool) {
         if (claimed[_account]) {
             revert AlreadyClaimed();
@@ -54,7 +53,6 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
         }
 
         claimed[_account] = true;
-        _setTokenURI(_tokenIdCounter, tokenUri_);
         _safeMint(_account, _tokenIdCounter);
         _tokenIdCounter++;
 
