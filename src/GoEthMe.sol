@@ -1,19 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity 0.8.19;
 
 import {RewardsNft} from "./RewardsNft.sol";
-import "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
-interface IRewardsNft {
-    function _safeMint(string memory _tokenUri) external;
-}
-
-/// @title GoEthMe - A decentralized fundraising platform for creative projects.
 contract GoEthMe {
-    RewardsNft private rewardsNft;
-
-    /// @dev Structure representing a GoFund campaign.
     struct GoFund {
         string title;
         uint256 fundingGoal;
@@ -79,9 +70,6 @@ contract GoEthMe {
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
 
-    /// @notice Contribute Ether to a GoFund campaign.
-    /// @param _ID The ID of the campaign to contribute to.
-
     function contributeEth(uint _ID) external payable {
         if (msg.value <= 0) revert InsufficientInput();
         GoFund storage fund = funder[_ID];
@@ -121,9 +109,6 @@ contract GoEthMe {
 
         emit GetContributedFunds(_ID, false);
     }
-
-    /// @notice End a campaign early, returning funds to contributors.
-    /// @param _ID The ID of the campaign to end early.
 
     function endCampaignEarly(uint _ID) external payable {
         GoFund storage fund = funder[_ID];
