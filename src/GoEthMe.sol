@@ -1,10 +1,5 @@
 // SPDX-License-Identifier: MIT
-
-pragma solidity 0.8.19;
-
-contract GoEthMe {
-
-     struct GoFund {
+    struct GoFund {
         string title; 
         uint256 fundingGoal;
         address owner;
@@ -13,6 +8,11 @@ contract GoEthMe {
         uint256 fundingBalance;
         address[] contributors;
     }
+pragma solidity 0.8.19;
+
+contract GoEthMe {
+
+ 
 
     uint public id;
     mapping(uint => GoFund) funder;
@@ -43,7 +43,7 @@ contract GoEthMe {
        emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
 
-    function contributeEth(uint _ID) external payable{
+    function contributeEth(uint _ID) external payable {
         if(msg.value <= 0)  revert InsufficientInput();
          GoFund storage fund = funder[_ID];
         if(fund.isActive != true) revert NotActive();
@@ -70,18 +70,6 @@ contract GoEthMe {
        
        emit GetContributedFunds(_ID, false);
     } 
-    function endCampaignEarly(uint _ID) external payable {
-        GoFund storage fund = funder[_ID];
-         if (msg.sender != fund.owner) revert NotOwner();
-         if (!fund.isActive) revert NotActive();
-        require(block.timestamp < fund.durationTime, "Duration time has already passed");
-        fund.isActive = false;
-        uint _bal = fund.fundingBalance;
-        fund.fundingBalance = 0; 
-        payable(fund.owner).transfer(_bal);
-
-    emit GetContributedFunds(_ID, false);
- }
 
        struct Contributors {
         address contributor;
