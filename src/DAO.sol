@@ -33,6 +33,7 @@ contract GofundmeDAO {
     );
     event MemberRemoved(uint tokenId);
     event Vote(address member, uint _id);
+    event Approved(_id);
 
     constructor(address _goethme, address _address, address _wildLifeGuardian) {
         goethme = GoEthMe(_goethme);
@@ -55,7 +56,7 @@ contract GofundmeDAO {
         fund.fundingGoal = _fundingGoal;
         fund.owner = msg.sender;
         fund.durationTime = _durationTime;
-        fund.isActive = false;
+        fund.isActive = true;
         fund.tokenUri = imageUrl;
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
@@ -85,29 +86,11 @@ contract GofundmeDAO {
     }
 
     function approveCampaign(uint _id) external {
+        require(admin == msg.sender, "Only admin can approve a campaign")
         GoFund storage fund = funder[_id];
-        require(isMember[msg.sender], "You are not a member");
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
-        require(
-            memberVotes[msg.sender] == _id,
-            "You have not voted for this ID"
-        );
 
-        uint voteCount = 0;
-        for (uint i = 0; i < members.length; i++) {
-            if (memberVotes[members[i]] == _id) {
-                voteCount++;
-            }
-        }
-
-        require(voteCount >= minVotesRequired, "Not enough votes to execute");
-
-        // Reset votes
-        for (uint i = 0; i < members.length; i++) {
-            if (memberVotes[members[i]] == _id) {
-                memberVotes[members[i]] = 0;
-            }
-        }
+        funder[_id].isActive = false;
 
         // Execute the createGofundme function
         if (fund.yayvotes > fund.nayvotes) {
@@ -119,7 +102,8 @@ contract GofundmeDAO {
                 funder[_id].durationTime
             );
         }
-        funder[_id].isActive = false;
+
+        emit Approved(_id);
     }
 
     function contributeToPool() external payable {
