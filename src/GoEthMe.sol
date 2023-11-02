@@ -112,10 +112,11 @@ contract GoEthMe is ERC2771Context {
 
     /// @notice Get contributed funds from a GoFund campaign.
     /// @param _ID The ID of the campaign to retrieve funds from.
-    function getContributedFunds(uint _ID) external payable {
+    function getContributedFunds(uint _ID) external {
         GoFund storage fund = funder[_ID];
+
         if (fund.isActive != true) revert NotActive();
-        if (msg.sender != fund.owner) revert NotOwner();
+        if (_msgSender() != fund.owner) revert NotOwner();
         if (fund.durationTime > block.timestamp) revert TimeNotReached();
         uint _bal = fund.fundingBalance;
         fund.fundingBalance = 0;
