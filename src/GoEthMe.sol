@@ -7,6 +7,8 @@
         bool isActive;
         uint256 fundingBalance;
         address[] contributors;
+        uint yayvotes;
+        uint nayvotes;
     }
 pragma solidity 0.8.19;
 
