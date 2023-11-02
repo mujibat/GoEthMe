@@ -1,6 +1,6 @@
 import "./GoEthMe.sol";
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 interface ISoulNft {
     function balanceOf(address owner) external view returns (uint256);
@@ -115,7 +115,7 @@ contract GofundmeDAO {
         fund.isActive = true;
         fund.tokenUri = imageUrl;
 
-        if (_status == status.URGENT) {
+        if (status_ == status.URGENT) {
             _status[_id] = status.URGENT;
             votePeriod_[_id].urgent = block.timestamp + urgentVotingTime;
             require(msg.value == fee, "Insufficient amount");

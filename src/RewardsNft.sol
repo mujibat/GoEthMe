@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 contract RewardsNft is ERC721, ERC721URIStorage {
     uint256 tokenIdCounter;
 
     constructor(
-        string memory name,
-        string memory symbol
-    ) ERC721(name, symbol) {}
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol) {}
 
     function _safeMint(string memory _tokenUri) external {
         uint256 tokenId = tokenIdCounter + 1;
@@ -18,10 +18,6 @@ contract RewardsNft is ERC721, ERC721URIStorage {
     }
 
     // functions that needs to be overriden because i used the ERC721URIStorage extension
-    function _burn(uint256 tokenId) internal override(ERC721) {
-        super._burn(tokenId);
-    }
-
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
