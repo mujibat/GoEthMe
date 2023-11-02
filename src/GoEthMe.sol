@@ -4,10 +4,11 @@ pragma solidity 0.8.19;
 
 import {RewardsNft} from "./RewardsNft.sol";
 import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import {ERC2771Context} from "openzeppelin-contracts/contracts/metatx/ERC2771Context.sol";
 
 /// @title GoEthMe - A decentralized fundraising platform for creative projects.
 
-contract GoEthMe {
+contract GoEthMe is ERC2771Context {
     struct GoFund {
         string title;
         uint256 fundingGoal;
@@ -46,6 +47,8 @@ contract GoEthMe {
         uint amount
     );
     event GetContributedFunds(uint indexed _ID, bool isActive);
+
+    constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {}
 
     /// @notice Create a GoFund campaign.
     /// @param _title The title of the campaign.
@@ -86,21 +89,24 @@ contract GoEthMe {
         if (fund.fundingBalance + msg.value > fund.fundingGoal)
             revert ExceededFundingGoal();
         if (block.timestamp > fund.durationTime) revert NotInDuration();
-        contribute[_ID][msg.sender] += msg.value;
+
+        address contributor = _msgSender();
+
+        contribute[_ID][contributor] += msg.value;
         fund.fundingBalance += msg.value;
-        if (!hasContributed[_ID][msg.sender]) {
-            fund.contributors.push(msg.sender);
-            hasContributed[_ID][msg.sender] = true;
+        if (!hasContributed[_ID][contributor]) {
+            fund.contributors.push(contributor);
+            hasContributed[_ID][contributor] = true;
         }
-        if (IERC721(address(fund.nftAddress)).balanceOf(msg.sender) == 0) {
+        if (IERC721(address(fund.nftAddress)).balanceOf(contributor) == 0) {
             IRewardsNft(address(fund.nftAddress))._safeMint(fund.tokenUri);
         }
 
         emit ContributeEth(
             _ID,
             fund.fundingBalance,
-            msg.sender,
-            contribute[_ID][msg.sender]
+            creator,
+            contribute[_ID][contributor]
         );
     }
 
