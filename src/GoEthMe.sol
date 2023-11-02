@@ -55,6 +55,7 @@ contract GoEthMe {
     /// @return _id The unique ID of the created campaign.
 
     function createGofundme(
+        address creator,
         string memory _title,
         string memory uri,
         uint256 _fundingGoal,
@@ -66,7 +67,7 @@ contract GoEthMe {
 
         fund.title = _title;
         fund.fundingGoal = _fundingGoal;
-        fund.owner = msg.sender;
+        fund.owner = creator;
         fund.durationTime = _durationTime + block.timestamp;
         fund.nftAddress = new RewardsNft(_title, "RFT");
         fund.tokenUri = uri;
