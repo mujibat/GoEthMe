@@ -20,8 +20,8 @@ contract GofundmeDAO {
     }
 
     mapping(uint => GoFund) public funder;
+    mapping(address => mapping(uint => bool)) public hasVoted;
 
-    mapping(address => uint) public memberVotes;
 
     uint public minVotesRequired = 4; // Minimum votes required for a function to execute
 
@@ -33,7 +33,7 @@ contract GofundmeDAO {
     );
     event MemberRemoved(uint tokenId);
     event Vote(address member, uint _id);
-    event Approved(_id);
+    event Approved(uint _id, string _title);
 
     constructor(address _goethme, address _address, address _wildLifeGuardian) {
         goethme = GoEthMe(_goethme);
@@ -70,17 +70,17 @@ contract GofundmeDAO {
     }
 
     function vote(uint _id, Votes votes) external {
+        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
-        require(memberVotes[msg.sender] == 0, "You have already voted");
-        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
+        require(!hasVoted[msg.sender][_id], "Already voted");
 
-        memberVotes[msg.sender] = _id;
+        hasVoted[msg.sender][_id] = true;
 
         if (votes == Votes.YAY) {
-            fund.yayvotes += memberVotes[msg.sender];
+            fund.yayvotes += 1;
         } else {
-            fund.nayvotes += memberVotes[msg.sender];
+            fund.nayvotes += 1;
         }
         emit Vote(msg.sender, _id);
     }
@@ -103,7 +103,7 @@ contract GofundmeDAO {
             );
         }
 
-        emit Approved(_id);
+        emit Approved(_id, funder[_id].title,);
     }
 
     function contributeToPool() external payable {
