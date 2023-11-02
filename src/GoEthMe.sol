@@ -18,6 +18,8 @@ contract GoEthMe {
         string tokenUri;
         RewardsNft nftAddress;
         address[] contributors;
+        uint yayvotes;
+        uint nayvotes;
     }
 
     uint public id;

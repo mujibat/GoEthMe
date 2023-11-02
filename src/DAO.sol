@@ -2,20 +2,22 @@ import "./GoEthMe.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-interface IGoEthMe {
-    function createGofundme(string memory _title, uint256 _fundingGoal, uint256 _durationTime) external returns(uint _id) ;
-}
+ interface ISoulNft {
+    function balanceOf(address owner) external view returns (uint256);
+    function burn(uint256 tokenId) external;
+ }
 
 contract GofundmeDAO {
+
     uint256 public id;
-    address goethme;
-    // struct GoFund {
-    //     string title;
-    //     uint256 fundingGoal;
-    //     address owner;
-    //     uint256 durationTime;
-    //     bool isApproved;
-    // }
+    ISoulNft soulnft;
+    GoEthMe goethme;
+    address admin;
+
+    enum Votes {
+        YAY,
+        NAY
+    }
     
     mapping(uint => GoFund) public funder;
     
@@ -26,17 +28,13 @@ contract GofundmeDAO {
     uint public minVotesRequired = 4; // Minimum votes required for a function to execute
     
     event CreateGofundme(uint _id, string _title, uint256 _fundingGoal, uint256 _durationTime);
-    event MemberAdded(address member);
-    event MemberRemoved(address member);
+    event MemberRemoved(uint tokenId);
     event Vote(address member, uint _id);
     
-    constructor(address[] memory initialMembers) {
-        require(initialMembers.length == 7, "Initial members must be 7");
-        
-        for (uint i = 0; i < initialMembers.length; i++) {
-            members.push(initialMembers[i]);
-            isMember[initialMembers[i]] = true;
-        }
+    constructor(address _goethme, address _address, address _wildLifeGuardian) {
+        goethme = GoEthMe(_goethme);
+        admin= _address;
+        soulnft = ISoulNft(_wildLifeGuardian);
     }
     
     function createGofundme(string memory _title, uint256 _fundingGoal, uint256 _durationTime) public {
@@ -55,49 +53,35 @@ contract GofundmeDAO {
         
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
+
     
-    function addMember(address newMember) external {
-        require(isMember[msg.sender], "You are not a member");
-        require(!isMember[newMember], "Member already exists");
-        require(members.length < 7, "Maximum number of members reached");
-        
-        members.push(newMember);
-        isMember[newMember] = true;
-        
-        emit MemberAdded(newMember);
+    function removeMember(uint tokenId) external {
+        require(msg.sender == admin, "Only admin can remove a member");
+        soulnft.burn(tokenId);
+   
+        emit MemberRemoved(tokenId);
     }
     
-    function removeMember(address member) external {
-        require(isMember[msg.sender], "You are not a member");
-        require(isMember[member], "Member does not exist");
-        require(members.length > 1, "Cannot remove the last member");
-        
-        isMember[member] = false;
-        memberVotes[member] = 0;
-        
-        // Remove the member from the list
-        for (uint i = 0; i < members.length; i++) {
-            if (members[i] == member) {
-                members[i] = members[members.length - 1];
-                members.pop();
-                break;
-            }
-        }
-        
-        emit MemberRemoved(member);
-    }
-    
-    function vote(uint _id) external {
+    function vote(uint _id, Votes votes) external {
+         GoFund storage fund = funder[_id];
         require(isMember[msg.sender], "You are not a member");
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
         require(memberVotes[msg.sender] == 0, "You have already voted");
+        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO Soul Bound Token Owner");
         
         memberVotes[msg.sender] = _id;
+       
+        if(votes == Votes.YAY) {
+            fund.yayvotes += memberVotes[msg.sender];
+        } else {
+            fund.nayvotes += memberVotes[msg.sender];
+        }
         emit Vote(msg.sender, _id);
     }
     
-// Add your code to execute the GoFund function here
+
 function executeFunction(uint _id) external {
+    GoFund storage fund = funder[_id];
     require(isMember[msg.sender], "You are not a member");
     require(funder[_id].isActive, "No active GoFund campaign with this ID");
     require(memberVotes[msg.sender] == _id, "You have not voted for this ID");
@@ -119,19 +103,14 @@ function executeFunction(uint _id) external {
     }
 
     // Execute the createGofundme function
-    IGoEthMe(goethme).createGofundme(funder[_id].title, funder[_id].fundingGoal, funder[_id].durationTime);
-    // createGofundme(funder[_id].title, funder[_id].fundingGoal, funder[_id].durationTime + block.timestamp);
+    if(fund.yayvotes > fund.nayvotes){
+
+    goethme.createGofundme(funder[_id].title, funder[_id].fundingGoal, funder[_id].durationTime + block.timestamp);
+
+    }
     funder[_id].isActive = false;
 }
 
 }
-/**
-yay and nay(checking balance)
-checking balanceOf to check a real member & voting power
-calling the main contract with interface
-calling nft contract burn function to remove a member
 
-
-
- */
 
