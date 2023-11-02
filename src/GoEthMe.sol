@@ -3,8 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {RewardsNft} from "./RewardsNft.sol";
-import {IERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import {ERC2771Context} from "openzeppelin-contracts/contracts/metatx/ERC2771Context.sol";
+import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
 struct GoFund {
     string title;
@@ -47,8 +46,6 @@ contract GoEthMe {
         uint amount
     );
     event GetContributedFunds(uint indexed _ID, bool isActive);
-
-    constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {}
 
     /// @notice Create a GoFund campaign.
     /// @param _title The title of the campaign.
@@ -114,7 +111,7 @@ contract GoEthMe {
         GoFund storage fund = funder[_ID];
 
         if (fund.isActive != true) revert NotActive();
-        if (_msgSender() != fund.owner) revert NotOwner();
+        if (msg.sender != fund.owner) revert NotOwner();
         if (fund.durationTime > block.timestamp) revert TimeNotReached();
         uint _bal = fund.fundingBalance;
         fund.fundingBalance = 0;
@@ -124,24 +121,6 @@ contract GoEthMe {
         emit GetContributedFunds(_ID, false);
     }
 
-    /// @notice End a campaign early, returning funds to contributors.
-    /// @param _ID The ID of the campaign to end early.
-
-    function endCampaignEarly(uint _ID) external payable {
-        GoFund storage fund = funder[_ID];
-        if (msg.sender != fund.owner) revert NotOwner();
-        if (!fund.isActive) revert NotActive();
-        require(
-            block.timestamp < fund.durationTime,
-            "Duration time has already passed"
-        );
-        fund.isActive = false;
-        uint _bal = fund.fundingBalance;
-        fund.fundingBalance = 0;
-        payable(fund.owner).transfer(_bal);
-
-        emit GetContributedFunds(_ID, false);
-    }
 
     struct Contributors {
         address contributor;

@@ -14,14 +14,16 @@ interface ISoulNft {
  */
 
 contract GofundmeDAO {
+
     uint256 public id;
     ISoulNft soulnft;
     GoEthMe goethme;
     address admin;
-    address relayer;
-    uint public votingTime;
-    uint public urgentVotingTime;
-    uint public fee = 0 ether;
+    uint votingTime;
+
+    struct DAOTime {
+        uint daovotetime;
+    }
 
     // Errors
 
@@ -33,19 +35,10 @@ contract GofundmeDAO {
         NAY
     }
 
-    enum status {
-        URGENT,
-        NORMAL
-    }
-
-    struct VotePeriod {
-        uint256 normal;
-        uint256 urgent;
-    }
-
+    mapping(uint => DAOTime) public daotime;
     mapping(uint => GoFund) public funder;
-    mapping(uint => status) public _status;
-    mapping(uint => VotePeriod) public votePeriod_;
+    mapping(address => uint) memberVotes;
+
     mapping(address => mapping(uint => bool)) public hasVoted;
 
     // Events
@@ -57,7 +50,7 @@ contract GofundmeDAO {
     );
     event MemberRemoved(uint tokenId);
     event Vote(address member, uint _id);
-    event Approved(uint _id, string _title);
+    event ApprovedProposal(uint _id, string _title);
     event ContributedToPool(address member, uint256 amount);
     event SentEth(uint256 amount);
 
@@ -66,25 +59,17 @@ contract GofundmeDAO {
      * @param _goethme Address of the GoEthMe contract.
      * @param _address Address of the DAO admin.
      * @param _wildLifeGuardian Address of the WildLifeGuardian contract.
-     * @param _relayer Address of the relayer.
-     * @param _votingTime Duration of voting periods.
-     * @param _fee Fee required for urgent campaign creation.
      */
 
     constructor(
         address _goethme,
         address _address,
-        address _wildLifeGuardian,
-        address _relayer,
-        uint _votingTime,
-        uint _fee
+        address _wildLifeGuardian
     ) {
         goethme = GoEthMe(_goethme);
         admin = _address;
         soulnft = ISoulNft(_wildLifeGuardian);
-        relayer = _relayer;
-        votingTime = _votingTime;
-        fee = _fee;
+        votingTime = 1 days;
     }
 
     /**
@@ -93,19 +78,18 @@ contract GofundmeDAO {
      * @param _fundingGoal Funding goal for the campaign.
      * @param _durationTime Duration of the campaign.
      * @param imageUrl Image URL for the campaign.
-     * @param status_ Status of the campaign (URGENT or NORMAL).
      */
 
     function createGofundme(
         string memory _title,
         uint256 _fundingGoal,
         uint256 _durationTime,
-        string memory imageUrl,
-        status status_
-    ) public payable {
+        string memory imageUrl
+    ) public returns (uint _id){
+        votingTime = 1 days;
         id++;
-        uint _id = id;
-
+        _id = id;
+        DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
         fund.title = _title;
@@ -114,15 +98,7 @@ contract GofundmeDAO {
         fund.durationTime = _durationTime;
         fund.isActive = true;
         fund.tokenUri = imageUrl;
-
-        if (status_ == status.URGENT) {
-            _status[_id] = status.URGENT;
-            votePeriod_[_id].urgent = block.timestamp + urgentVotingTime;
-            require(msg.value == fee, "Insufficient amount");
-        } else {
-            _status[_id] = status.NORMAL;
-            votePeriod_[_id].normal = block.timestamp + votingTime;
-        }
+        time.daovotetime = votingTime + block.timestamp;
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
@@ -151,56 +127,35 @@ contract GofundmeDAO {
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
         require(!hasVoted[msg.sender][_id], "Already voted");
+        require(daotime[_id].daovotetime > block.timestamp, "Voting Time Elapsed");
 
-        if (_status[_id] == status.URGENT) {
-            // Check if voting period is over
-            if (block.timestamp > votePeriod_[_id].urgent) {
-                revert VotingOver();
-            }
-        }
-
-        if (_status[_id] == status.NORMAL) {
-            // Check if voting period is over
-            if (block.timestamp > votePeriod_[_id].normal) {
-                revert VotingOver();
-            }
-        }
 
         hasVoted[msg.sender][_id] = true;
+        uint numVotes = 1;
 
         if (votes == Votes.YAY) {
-            fund.yayvotes += 1;
+            fund.yayvotes += numVotes;
         } else {
-            fund.nayvotes += 1;
+            fund.nayvotes += numVotes;
         }
         emit Vote(msg.sender, _id);
     }
+  
 
     /**
      * @dev Allows the admin to approve a campaign for execution.
-     * @param _id The ID of the campaign to be approved.
+     * @param _id The ID of the campaign to be approvedProposal.
      */
 
-    function approveCampaign(uint _id) external {
+    function approveProposal(uint _id) external {
         require(admin == msg.sender, "Only admin can approve a campaign");
+        require(daotime[_id].daovotetime < block.timestamp, "Voting Time In Progress");
 
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
 
         funder[_id].isActive = false;
 
-        // check that voting period is over
-        if (_status[_id] == status.URGENT) {
-            if (block.timestamp < votePeriod_[_id].urgent) {
-                revert VotingInProgress();
-            }
-        }
-
-        if (_status[_id] == status.NORMAL) {
-            if (block.timestamp < votePeriod_[_id].normal) {
-                revert VotingInProgress();
-            }
-        }
 
         // Execute the createGofundme function
         if (fund.yayvotes > fund.nayvotes) {
@@ -213,45 +168,8 @@ contract GofundmeDAO {
             );
         }
 
-        emit Approved(_id, funder[_id].title);
+        emit ApprovedProposal(_id, funder[_id].title);
     }
 
-    /**
-     * @dev Allows a member of the DAO to contribute ETH to the DAO's pool.
-     * @notice Members must be in possession of a SoulNFT token and provide a non-zero ETH value to contribute.
-     */
-    function contributeToPool() external payable {
-        require(msg.value > 0, "Insufficient input");
-        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
 
-        emit ContributedToPool(msg.sender, msg.value);
-    }
-
-    /**
-     * @dev Allows the admin to send ETH from the contract's balance to the designated relayer.
-     * @param _amount The amount of ETH to be sent to the relayer.
-     * @notice Only the admin can initiate this action, and it ensures the relayer's balance is sufficiently low.
-     * @notice The transfer is executed as a call to the relayer's address.
-     */
-
-    function sendEth(uint256 _amount) external {
-        require(msg.sender == admin, "Only admin can send ETH");
-        require(relayer.balance <= 0.1 ether, "Relayer balance is not low");
-        (bool s, ) = payable(relayer).call{value: _amount}("");
-        require(s, "Transfer failed");
-
-        emit SentEth(_amount);
-    }
-
-    /**
-     * @dev Fallback function to receive and store incoming ETH.
-     */
-
-    receive() external payable {}
-
-    /**
-     * @dev Fallback function to receive and store incoming ETH.
-     */
-
-    fallback() external payable {}
 }
