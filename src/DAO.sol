@@ -29,7 +29,7 @@ contract GofundmeDAO {
 
     error VotingOver();
     error VotingInProgress();
-
+    // 0 for yay, 1 for nay
     enum Votes {
         YAY,
         NAY
