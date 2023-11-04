@@ -11,7 +11,8 @@ import {GofundmeDAO} from "./DAO.sol";
 
 contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
-    bytes32 private rootHash;
+    bytes32 public rootHash;
+    string tokenUri;
     GofundmeDAO DAO;
 
     error InvalidAddress(address);
@@ -24,26 +25,26 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
 
     /// @notice Constructor to initialize the contract.
     /// @param _owner The address of the contract owner.
+    /// @param _tokenUri The token URI for the new tokens.
     constructor(
-        address _owner
-    ) ERC721("WildLife Guardian Token", "WGT") Ownable(_owner) {}
+        address _owner,
+        string memory _tokenUri
+    ) ERC721("WildLife Guardian Token", "WGT") Ownable(_owner) {
+        tokenUri = _tokenUri;
+    }
 
     /// @notice Safely mints new tokens and assigns them to specified addresses.
     /// @param to An array of addresses to receive the newly minted tokens.
-    /// @param tokenUri_ The token URI for the new tokens.
 
-    function safeMint(
-        address[] calldata to,
-        string memory tokenUri_
-    ) public onlyOwner {
-        uint256 tokenId = _tokenIdCounter;
-        _setTokenURI(tokenId, tokenUri_);
+    function safeMint(address[] calldata to) public onlyOwner {
+        string memory URI = tokenUri;
         for (uint i = 0; i < to.length; ++i) {
             if (to[i] == address(0)) {
                 revert InvalidAddress(to[i]);
             }
             if (balanceOf(to[i]) == 0) {
-                _safeMint(to[i], tokenId);
+                _setTokenURI(_tokenIdCounter, URI);
+                _safeMint(to[i], _tokenIdCounter);
                 _tokenIdCounter++;
             } else {
                 continue;
@@ -54,25 +55,24 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     /// @notice Claims a token for an address using a Merkle proof.
     /// @param _merkleProof The Merkle proof to verify the claim.
     /// @param _account The address claiming the token.
-    /// @param _amount The amount to claim.
     /// @return true if the claim is successful, false otherwise.
 
     function claimToken(
         bytes32[] calldata _merkleProof,
-        address _account,
-        uint256 _amount
+        address _account
     ) external returns (bool) {
         require(_account == msg.sender, "Only owner of account can claim");
         require(balanceOf(_account) == 0, "You already own an nft");
         if (claimed[_account]) {
             revert AlreadyClaimed();
         }
-        bytes32 leaf = keccak256(abi.encodePacked(_account, _amount));
+        bytes32 leaf = keccak256(abi.encodePacked(_account, uint(1)));
         if (!MerkleProof.verify(_merkleProof, rootHash, leaf)) {
             revert NotWhitelisted();
         }
 
         claimed[_account] = true;
+        _setTokenURI(_tokenIdCounter, tokenUri);
         _safeMint(_account, _tokenIdCounter);
         _tokenIdCounter++;
 
