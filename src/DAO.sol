@@ -14,7 +14,6 @@ interface ISoulNft {
  */
 
 contract GofundmeDAO {
-
     uint256 public id;
     ISoulNft soulnft;
     GoEthMe goethme;
@@ -61,11 +60,7 @@ contract GofundmeDAO {
      * @param _wildLifeGuardian Address of the WildLifeGuardian contract.
      */
 
-    constructor(
-        address _goethme,
-        address _address,
-        address _wildLifeGuardian
-    ) {
+    constructor(address _goethme, address _address, address _wildLifeGuardian) {
         goethme = GoEthMe(_goethme);
         admin = _address;
         soulnft = ISoulNft(_wildLifeGuardian);
@@ -85,7 +80,7 @@ contract GofundmeDAO {
         uint256 _fundingGoal,
         uint256 _durationTime,
         string memory imageUrl
-    ) public returns (uint _id){
+    ) public returns (uint _id) {
         votingTime = 1 days;
         id++;
         _id = id;
@@ -127,8 +122,10 @@ contract GofundmeDAO {
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
         require(!hasVoted[msg.sender][_id], "Already voted");
-        require(daotime[_id].daovotetime > block.timestamp, "Voting Time Elapsed");
-
+        require(
+            daotime[_id].daovotetime > block.timestamp,
+            "Voting Time Elapsed"
+        );
 
         hasVoted[msg.sender][_id] = true;
         uint numVotes = 1;
@@ -140,7 +137,6 @@ contract GofundmeDAO {
         }
         emit Vote(msg.sender, _id);
     }
-  
 
     /**
      * @dev Allows the admin to approve a campaign for execution.
@@ -149,13 +145,15 @@ contract GofundmeDAO {
 
     function approveProposal(uint _id) external {
         require(admin == msg.sender, "Only admin can approve a campaign");
-        require(daotime[_id].daovotetime < block.timestamp, "Voting Time In Progress");
+        require(
+            daotime[_id].daovotetime < block.timestamp,
+            "Voting Time In Progress"
+        );
 
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
 
         funder[_id].isActive = false;
-
 
         // Execute the createGofundme function
         if (fund.yayvotes > fund.nayvotes) {
@@ -170,6 +168,4 @@ contract GofundmeDAO {
 
         emit ApprovedProposal(_id, funder[_id].title);
     }
-
-
 }

@@ -6,6 +6,7 @@ import {RewardsNft} from "./RewardsNft.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
 struct GoFund {
+    uint id_;
     string title;
     uint256 fundingGoal;
     address owner;
@@ -65,6 +66,7 @@ contract GoEthMe {
         _id = id;
         GoFund storage fund = funder[_id];
 
+        fund.id_ = _id;
         fund.title = _title;
         fund.fundingGoal = _fundingGoal;
         fund.owner = creator;
@@ -120,7 +122,6 @@ contract GoEthMe {
 
         emit GetContributedFunds(_ID, false);
     }
-
 
     struct Contributors {
         address contributor;
