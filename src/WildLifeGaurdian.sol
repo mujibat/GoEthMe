@@ -5,12 +5,14 @@ import "lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
+import {GofundmeDAO} from "./DAO.sol";
 
 /// @title WildLifeGuardianToken - A unique NFT contract for Wildlife Guardians.
 
 contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
     bytes32 private rootHash;
+    GofundmeDAO DAO;
 
     error InvalidAddress(address);
     error AlreadyClaimed();
@@ -60,6 +62,8 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
         address _account,
         uint256 _amount
     ) external returns (bool) {
+        require(_account == msg.sender, "Only owner of account can claim");
+        require(balanceOf(_account) == 0, "You already own an nft");
         if (claimed[_account]) {
             revert AlreadyClaimed();
         }
@@ -85,7 +89,8 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     /// @notice Burns a token by its ID.
     /// @param tokenId The ID of the token to burn.
 
-    function burn(uint256 tokenId) external onlyOwner {
+    function burn(uint256 tokenId) external {
+        require(address(DAO) == msg.sender, "Only Dao can burn tokens");
         _burn(tokenId);
     }
 

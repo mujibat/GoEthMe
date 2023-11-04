@@ -15,6 +15,11 @@ contract CounterTest is Test {
     function test_Increment() public {
         counter.increment();
         assertEq(counter.number(), 1);
+        console2.logAddress(
+            vm.addr(
+                0xbcd1e2965ec449d59fbc83a1403d89ae8da3d9d70fced9dec72301ab7feac32a
+            )
+        );
     }
 
     function testFuzz_SetNumber(uint256 x) public {
