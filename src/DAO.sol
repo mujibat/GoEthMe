@@ -128,7 +128,7 @@ contract GofundmeDAO {
         );
 
         hasVoted[msg.sender][_id] = true;
-        uint numVotes = 1;
+        uint8 numVotes = 1;
 
         if (votes == Votes.YAY) {
             fund.yayvotes += numVotes;
