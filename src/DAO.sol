@@ -19,6 +19,7 @@ contract GofundmeDAO {
     GoEthMe goethme;
     address admin;
     uint votingTime;
+    uint _time;
 
     struct DAOTime {
         uint daovotetime;
@@ -81,9 +82,12 @@ contract GofundmeDAO {
         uint256 _durationTime,
         string memory imageUrl
     ) public returns (uint _id) {
-        votingTime = 1 days;
+        // votingTime = 1 days;
         id++;
         _id = id;
+        if (_id == 1){
+            _time = block.timestamp + 30 days;
+        }
         DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
@@ -103,11 +107,17 @@ contract GofundmeDAO {
      * @param tokenId The unique identifier of the member to be removed.
      */
 
-    function removeMember(uint tokenId) external {
+    function removeMember(uint tokenId, address _address) external {
         require(msg.sender == admin, "Only admin can remove a member");
+        require(block.timestamp > _time, "can't remove member yet");
+        uint removeCriteria = (70 * id) / 100;
+      
+        if (memberVotes[_address] < removeCriteria) {
+            soulnft.burn(tokenId);
+        }
 
-        soulnft.burn(tokenId);
-
+         _time = block.timestamp + 30 days;
+         
         emit MemberRemoved(tokenId);
     }
 
@@ -135,6 +145,7 @@ contract GofundmeDAO {
         } else {
             fund.nayvotes += numVotes;
         }
+        memberVotes[msg.sender]++;
         emit Vote(msg.sender, _id);
     }
 

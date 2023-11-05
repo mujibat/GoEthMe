@@ -11,9 +11,9 @@ contract RewardsNft is ERC721, ERC721URIStorage {
         string memory _symbol
     ) ERC721(_name, _symbol) {}
 
-    function _safeMint(string memory _tokenUri) external {
+    function _safeMint(address contributor, string memory _tokenUri) external {
         uint256 tokenId = tokenIdCounter + 1;
-        _safeMint(msg.sender, tokenId);
+        _safeMint(contributor, tokenId);
         _setTokenURI(tokenId, _tokenUri);
     }
 
