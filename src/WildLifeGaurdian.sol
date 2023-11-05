@@ -14,6 +14,7 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     bytes32 public rootHash;
     string tokenUri;
     GofundmeDAO DAO;
+    
 
     error InvalidAddress(address);
     error AlreadyClaimed();
@@ -46,6 +47,7 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
                 _setTokenURI(_tokenIdCounter, URI);
                 _safeMint(to[i], _tokenIdCounter);
                 _tokenIdCounter++;
+
             } else {
                 continue;
             }
