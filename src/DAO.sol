@@ -1,11 +1,15 @@
-import "./GoEthMe.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
+
+import "./GoEthMe.sol";
+import {DaoMembership} from "./WildLifeGaurdian.sol";
 
 interface ISoulNft {
     function balanceOf(address owner) external view returns (uint256);
 
     function burn(uint256 tokenId) external;
+
+    function showIds(address _member) external view returns (uint);
 }
 
 /**
