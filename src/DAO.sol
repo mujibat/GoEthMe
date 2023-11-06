@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
-
+import {Test, console2} from "forge-std/Test.sol";
 import "./GoEthMe.sol";
-import {DaoMembership} from "./WildLifeGaurdian.sol";
+import "./WildLifeGaurdian.sol";
 
 interface ISoulNft {
     function balanceOf(address owner) external view returns (uint256);
@@ -20,6 +20,7 @@ interface ISoulNft {
 contract GofundmeDAO {
     uint256 public id;
     ISoulNft soulnft;
+    WildLifeGuardianToken token;
     GoEthMe goethme;
     address admin;
     uint votingTime;
@@ -32,8 +33,14 @@ contract GofundmeDAO {
 
     // Errors
 
-    error VotingOver();
     error VotingInProgress();
+    error OnlyAdmin();
+    error NotYetTime();
+    error NotMember();
+    error NotActive();
+    error AlreadyVoted();
+    error VotingTimeElapsed();
+    error NotEligible();
     // 0 for yay, 1 for nay
     enum Votes {
         YAY,
@@ -109,23 +116,25 @@ contract GofundmeDAO {
 
     /**
      * @dev Allows the admin to remove a member from the DAO.
-     * @param tokenId The unique identifier of the member to be removed.
      */
 
-    function removeMember(uint tokenId) external {
-        require(msg.sender == admin, "Only admin can remove a member");
-        require(block.timestamp > _time, "can't remove member yet");
-        _time = block.timestamp + 30 days;
-
+    function removeMember(uint _id) external {
+        if(msg.sender != admin) revert OnlyAdmin();
+        if(_time > block.timestamp) revert NotYetTime();
+              _time = block.timestamp + 30 days;
+              id = _id;
+         require(_id > 1, "cannot remove");
         uint removeCriteria = (70 * id) / 100;
+        // console2.logUint(removeCriteria);
         for (uint i = 0; i < members.member.length; i++) {
             address daoMembers = members.member[i];
 
-            if (memberVotes[daoMembers] < removeCriteria) {
-                uint id_ = soulnft.showIds(daoMembers);
-                soulnft.burn(id_);
-                emit MemberRemoved(id_);
+            if (memberVotes[daoMembers] < removeCriteria)  {
+                uint id_ = ISoulNft(address(token)).showIds(daoMembers);
+                ISoulNft(address(token)).burn(id_);
             }
+            emit MemberRemoved(_id);
+
         }
     }
 
@@ -136,10 +145,14 @@ contract GofundmeDAO {
      */
 
     function vote(uint _id, Votes votes) external {
-        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
+        if(soulnft.balanceOf(msg.sender) != 1) revert NotMember();
+        // require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
         GoFund storage fund = funder[_id];
+        if(funder[_id].isActive != true) revert NotActive();
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
+        if (hasVoted[msg.sender][_id]!= false ) revert AlreadyVoted();
         require(!hasVoted[msg.sender][_id], "Already voted");
+        if(block.timestamp > daotime[_id].daovotetime) revert VotingTimeElapsed();
         require(
             daotime[_id].daovotetime > block.timestamp,
             "Voting Time Elapsed"

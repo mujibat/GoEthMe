@@ -98,7 +98,7 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     /// @param tokenId The ID of the token to burn.
 
     function burn(uint256 tokenId) external {
-        require(address(DAO) == msg.sender, "Only Dao can burn tokens");
+       require(address(DAO) == msg.sender, "Only Dao can burn tokens");
         _burn(tokenId);
     }
 
