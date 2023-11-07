@@ -37,7 +37,7 @@ contract DAOTest is Helpers {
     function setUp() public {
         (Admin, _privKeyAd) = mkaddr("Admin");
         console2.log(address(goethme));
-        gofundmedao = new GofundmeDAO(Admin);
+        gofundmedao = new GofundmeDAO(address(goethme), Admin, address(Token));
         Token = new WildLifeGuardianToken(Admin, "token Uri");
         (_userA, _privKeyA) = mkaddr("USERA");
         (_userB, _privKeyB) = mkaddr("USERB");
