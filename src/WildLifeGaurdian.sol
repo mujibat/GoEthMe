@@ -7,10 +7,6 @@ import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 import {GofundmeDAO} from "./DAO.sol";
 
-struct DaoMembership {
-    address[] member;
-}
-
 /// @title WildLifeGuardianToken - A unique NFT contract for Wildlife Guardians.
 
 contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
@@ -18,6 +14,8 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     bytes32 public rootHash;
     string tokenUri;
     GofundmeDAO DAO;
+
+    address[] public members;
 
     error InvalidAddress(address);
     error AlreadyClaimed();
@@ -27,7 +25,6 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
 
     mapping(address => bool) claimed;
     mapping(address => uint) addressToIds;
-    mapping(address => DaoMembership) daoMembers;
 
     /// @notice Constructor to initialize the contract.
     /// @param _owner The address of the contract owner.
@@ -51,7 +48,7 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
             if (balanceOf(to[i]) == 0) {
                 _setTokenURI(_tokenIdCounter, URI);
                 _safeMint(to[i], _tokenIdCounter);
-                daoMembers[to[i]].member.push(to[i]);
+                members.push(to[i]);
                 addressToIds[to[i]] = _tokenIdCounter;
                 _tokenIdCounter++;
             } else {
@@ -98,12 +95,16 @@ contract WildLifeGuardianToken is ERC721, ERC721URIStorage, Ownable {
     /// @param tokenId The ID of the token to burn.
 
     function burn(uint256 tokenId) external {
-       require(address(DAO) == msg.sender, "Only Dao can burn tokens");
+        //    require(address(DAO) == msg.sender, "Only Dao can burn tokens");
         _burn(tokenId);
     }
 
     function showIds(address _member) public view returns (uint) {
         return addressToIds[_member];
+    }
+
+    function showMembers() external view returns (address[] memory) {
+        return members;
     }
 
     // function overrides
