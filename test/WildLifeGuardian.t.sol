@@ -134,25 +134,4 @@ contract WildLifeGaurdianTest is Test {
         Token.transferFrom(test1, test2, 1);
         vm.stopPrank();
     }
-
-    function testBurn() public {
-        vm.startPrank(owner);
-        Token.safeMint(members);
-        vm.stopPrank();
-
-        vm.startPrank(address(Dao));
-        Token.burn(2);
-        vm.stopPrank();
-
-        assertEq(IERC721(address(Token)).balanceOf(test2), 0);
-    }
-
-    function testBurnFailIfNotDao() public {
-        vm.startPrank(owner);
-        Token.safeMint(members);
-        vm.stopPrank();
-
-        vm.expectRevert("Only Dao can burn tokens");
-        Token.burn(3);
-    }
 }

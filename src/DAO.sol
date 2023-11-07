@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 import {Test, console2} from "forge-std/Test.sol";
 import "./GoEthMe.sol";
 import "./WildLifeGaurdian.sol";
+import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
 interface ISoulNft {
     function balanceOf(address owner) external view returns (uint256);
@@ -10,6 +11,8 @@ interface ISoulNft {
     function burn(uint256 tokenId) external;
 
     function showIds(address _member) external view returns (uint);
+
+     function showMembers() external view returns(address[] memory);
 }
 
 /**
@@ -25,7 +28,6 @@ contract GofundmeDAO {
     address admin;
     uint votingTime;
     uint _time;
-    DaoMembership members;
 
     struct DAOTime {
         uint daovotetime;
@@ -103,6 +105,8 @@ contract GofundmeDAO {
         DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
+        // console2.logAddress(address(goethme));
+
         fund.title = _title;
         fund.fundingGoal = _fundingGoal;
         fund.owner = msg.sender;
@@ -115,48 +119,25 @@ contract GofundmeDAO {
     }
 
     /**
-     * @dev Allows the admin to remove a member from the DAO.
-     */
-
-    function removeMember(uint _id) external {
-        if(msg.sender != admin) revert OnlyAdmin();
-        if(_time > block.timestamp) revert NotYetTime();
-              _time = block.timestamp + 30 days;
-              id = _id;
-         require(_id > 1, "cannot remove");
-        uint removeCriteria = (70 * id) / 100;
-        // console2.logUint(removeCriteria);
-        for (uint i = 0; i < members.member.length; i++) {
-            address daoMembers = members.member[i];
-
-            if (memberVotes[daoMembers] < removeCriteria)  {
-                uint id_ = ISoulNft(address(token)).showIds(daoMembers);
-                ISoulNft(address(token)).burn(id_);
-            }
-            emit MemberRemoved(_id);
-
-        }
-    }
-
-    /**
      * @dev Allows a member of the DAO to vote on a campaign.
      * @param _id The ID of the campaign to vote on.
      * @param votes The member's vote (YAY or NAY).
      */
 
     function vote(uint _id, Votes votes) external {
-        if(soulnft.balanceOf(msg.sender) != 1) revert NotMember();
-        // require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
+        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
+
         GoFund storage fund = funder[_id];
-        if(funder[_id].isActive != true) revert NotActive();
-        require(funder[_id].isActive, "No active GoFund campaign with this ID");
-        if (hasVoted[msg.sender][_id]!= false ) revert AlreadyVoted();
-        require(!hasVoted[msg.sender][_id], "Already voted");
-        if(block.timestamp > daotime[_id].daovotetime) revert VotingTimeElapsed();
-        require(
-            daotime[_id].daovotetime > block.timestamp,
-            "Voting Time Elapsed"
-        );
+        if (funder[_id].isActive != true) revert NotActive();
+        // require(funder[_id].isActive, "No active GoFund campaign with this ID");
+        if (hasVoted[msg.sender][_id] != false) revert AlreadyVoted();
+        // require(!hasVoted[msg.sender][_id], "Already voted");
+        if (block.timestamp > daotime[_id].daovotetime)
+            revert VotingTimeElapsed();
+        // require(
+        //     daotime[_id].daovotetime > block.timestamp,
+        //     "Voting Time Elapsed"
+        // );
 
         hasVoted[msg.sender][_id] = true;
         uint8 numVotes = 1;
@@ -168,6 +149,26 @@ contract GofundmeDAO {
         }
         memberVotes[msg.sender]++;
         emit Vote(msg.sender, _id);
+    }
+
+    function removeMember() external {
+        if(msg.sender != admin) revert OnlyAdmin();
+        if(_time > block.timestamp) revert NotYetTime();
+             _time = block.timestamp + 30 days;
+              
+         require(id > 1, "cannot remove");
+        uint removeCriteria = (70 * id) / 100;
+        address[] memory m = soulnft.showMembers();
+        for (uint i = 0; i < m.length;  i++) {
+            address daoMembers = m[i];
+
+            if (memberVotes[daoMembers] < removeCriteria)  {
+                uint id_ = soulnft.showIds(daoMembers);
+                soulnft.burn(id_);
+                emit MemberRemoved(id_);
+            }
+
+        }
     }
 
     /**
