@@ -45,92 +45,46 @@ contract DAOTest is Helpers {
         (_userD, _privKeyD) = mkaddr("USERD");
     }
 
-<<<<<<< HEAD
-    function testCreateGofundme() public {
-        vm.startPrank(_userA);
-        gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-    }
+    //   function testCreateGofundme() public {
+    //       vm.startPrank(_userA);
+    //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
+    //   }
+    //   function testOnlyAdmin() public {
+    //       vm.startPrank(_userA);
+    //       vm.expectRevert(GofundmeDAO.OnlyAdmin.selector);
+    //       gofundmedao.removeMember(1);
+    //   }
+    //   function testNotYetTime() public {
+    //       vm.startPrank(_userA);
+    //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
+    //       vm.stopPrank();
 
-    // function testOnlyAdmin() public {
-    //     vm.startPrank(_userA);
-    //     vm.expectRevert(GofundmeDAO.OnlyAdmin.selector);
-    // }
-
-    // function testNotYetTime() public {
-    //     vm.startPrank(_userA);
-    //     gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-    //     vm.stopPrank();
-
-    //     vm.startPrank(Admin);
-    //     vm.expectRevert(GofundmeDAO.NotYetTime.selector);
-    // }
-
+    //       vm.startPrank(Admin);
+    //       vm.expectRevert(GofundmeDAO.NotYetTime.selector);
+    //       gofundmedao.removeMember(1);
+    //   }
     // function testRemoveMember() public {
-    //     vm.startPrank(Admin);
-    //     Token.safeMint(members);
-    //     vm.stopPrank();
+    //         vm.startPrank(Admin);
+    //       Token.safeMint(members);
+    //       vm.stopPrank();
 
-    //     vm.startPrank(_userA);
+    //          vm.startPrank(_userA);
+    //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
+    //       vm.stopPrank();
+
+    //     vm.startPrank(Admin);
+    //       vm.warp(31 days);
+    //       gofundmedao.removeMember(0);
+    // assertEq(Token.balanceOf(test3), 0);
+
+    // }
+    //   function testNotMember() public {
+    //         vm.startPrank(_userA);
     //     gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
     //     vm.stopPrank();
-
     //     vm.startPrank(Admin);
-    //     vm.warp(31 days);
-    //     assertEq(Token.balanceOf(test3), 0);
-    // }
+    //     vm.expectRevert(GofundmeDAO.NotMember.selector);
+    //     gofundmedao.vote(1, vote_);
 
-    function testNotMember() public {
-        vm.startPrank(_userA);
-        gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-        vm.stopPrank();
-        vm.startPrank(Admin);
-        vm.expectRevert(GofundmeDAO.NotMember.selector);
-        gofundmedao.vote(1, vote_);
-    }
+    //   }
 }
-=======
-  //   function testCreateGofundme() public {
-  //       vm.startPrank(_userA);
-  //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-  //   }
-  //   function testOnlyAdmin() public {
-  //       vm.startPrank(_userA);
-  //       vm.expectRevert(GofundmeDAO.OnlyAdmin.selector);
-  //       gofundmedao.removeMember(1);
-  //   }
-  //   function testNotYetTime() public {
-  //       vm.startPrank(_userA);
-  //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-  //       vm.stopPrank();
-
-  //       vm.startPrank(Admin);
-  //       vm.expectRevert(GofundmeDAO.NotYetTime.selector);
-  //       gofundmedao.removeMember(1);
-  //   }
-  // function testRemoveMember() public {
-  //         vm.startPrank(Admin);
-  //       Token.safeMint(members);
-  //       vm.stopPrank();
-
-  //          vm.startPrank(_userA);
-  //       gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-  //       vm.stopPrank();
-
-  //     vm.startPrank(Admin);
-  //       vm.warp(31 days);
-  //       gofundmedao.removeMember(0);
-        // assertEq(Token.balanceOf(test3), 0);
-  
-  // }  
-//   function testNotMember() public {
-//         vm.startPrank(_userA);
-//     gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
-//     vm.stopPrank();
-//     vm.startPrank(Admin);
-//     vm.expectRevert(GofundmeDAO.NotMember.selector);
-//     gofundmedao.vote(1, vote_);
-
-//   }
-
-}
->>>>>>> 706c92b (changes)
