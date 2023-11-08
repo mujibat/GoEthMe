@@ -176,10 +176,7 @@ contract GofundmeDAO {
         if(admin != msg.sender) revert NotAdmin();
         require(admin == msg.sender, "Only admin can approve a campaign");
         if(daotime[_id].daovotetime > block.timestamp) revert VotingInProgress();
-        require(
-            daotime[_id].daovotetime < block.timestamp,
-            "Voting Time In Progress"
-        );
+       
 
         GoFund storage fund = funder[_id];
         // require(funder[_id].isActive, "No active GoFund campaign with this ID");

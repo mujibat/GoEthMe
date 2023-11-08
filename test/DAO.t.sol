@@ -168,7 +168,23 @@ contract DAOTest is Helpers {
     gofundmedao.approveProposal(1);
   }
   function testApproveProposal() public {
+     vm.startPrank(_userA);
+    gofundmedao.createGofundme("jjj", 5 ether, 86400, "http");
+    vm.stopPrank();
     vm.prank(Admin);
+    Token.safeMint(members);
+    vm.stopPrank();
+     vm.startPrank(test1);
+     gofundmedao.vote(1, vote_);
+     vm.stopPrank();
+      vm.startPrank(test2);
+     gofundmedao.vote(1, vote_);
+     vm.stopPrank();
+      vm.startPrank(test3);
+     gofundmedao.vote(1, vote_);
+     vm.stopPrank();
+     vm.prank(Admin);
+    vm.warp(2 days);
     gofundmedao.approveProposal(1);
   }
 
