@@ -172,8 +172,7 @@ contract GofundmeDAO {
      */
 
     function approveProposal(uint _id) external {
-        if (admin != msg.sender) revert NotAdmin();
-        // require(admin == msg.sender, "Only admin can approve a campaign");
+        if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
         if (daotime[_id].daovotetime > block.timestamp)
             revert VotingInProgress();
 
