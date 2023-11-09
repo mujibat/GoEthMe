@@ -12,7 +12,7 @@ interface ISoulNft {
 
     function showIds(address _member) external view returns (uint);
 
-     function showMembers() external view returns(address[] memory);
+    function showMembers() external view returns (address[] memory);
 }
 
 /**
@@ -92,6 +92,7 @@ contract GofundmeDAO {
 
     function createGofundme(
         string memory _title,
+        string memory _description,
         uint256 _fundingGoal,
         uint256 _durationTime,
         string memory imageUrl
@@ -106,8 +107,9 @@ contract GofundmeDAO {
         GoFund storage fund = funder[_id];
 
         // console2.logAddress(address(goethme));
-
+        fund.id_ = _id;
         fund.title = _title;
+        fund.description = _description;
         fund.fundingGoal = _fundingGoal;
         fund.owner = msg.sender;
         fund.durationTime = _durationTime;
@@ -152,22 +154,21 @@ contract GofundmeDAO {
     }
 
     function removeMember() external {
-        if(msg.sender != admin) revert OnlyAdmin();
-        if(_time > block.timestamp) revert NotYetTime();
-             _time = block.timestamp + 30 days;
-              
-         require(id > 1, "cannot remove");
+        if (msg.sender != admin) revert OnlyAdmin();
+        if (_time > block.timestamp) revert NotYetTime();
+        _time = block.timestamp + 30 days;
+
+        require(id > 1, "cannot remove");
         uint removeCriteria = (70 * id) / 100;
         address[] memory m = soulnft.showMembers();
-        for (uint i = 0; i < m.length;  i++) {
+        for (uint i = 0; i < m.length; i++) {
             address daoMembers = m[i];
 
-            if (memberVotes[daoMembers] < removeCriteria)  {
+            if (memberVotes[daoMembers] < removeCriteria) {
                 uint id_ = soulnft.showIds(daoMembers);
                 soulnft.burn(id_);
                 emit MemberRemoved(id_);
             }
-
         }
     }
 
@@ -177,7 +178,7 @@ contract GofundmeDAO {
      */
 
     function approveProposal(uint _id) external {
-        require(admin == msg.sender, "Only admin can approve a campaign");
+        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
         require(
             daotime[_id].daovotetime < block.timestamp,
             "Voting Time In Progress"
@@ -193,6 +194,7 @@ contract GofundmeDAO {
             goethme.createGofundme(
                 funder[_id].owner,
                 funder[_id].title,
+                funder[_id].description,
                 funder[_id].tokenUri,
                 funder[_id].fundingGoal,
                 funder[_id].durationTime
@@ -200,5 +202,9 @@ contract GofundmeDAO {
         }
 
         emit ApprovedProposal(_id, funder[_id].title);
+    }
+
+    function getAllProposalCount() external view returns (uint) {
+        return id;
     }
 }

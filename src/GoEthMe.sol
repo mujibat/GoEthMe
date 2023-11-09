@@ -8,8 +8,10 @@ import "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 struct GoFund {
     uint id_;
     string title;
+    string description;
     uint256 fundingGoal;
     address owner;
+    uint startTime;
     uint256 durationTime;
     bool isActive;
     uint256 fundingBalance;
@@ -59,6 +61,7 @@ contract GoEthMe {
     function createGofundme(
         address creator,
         string memory _title,
+        string memory _description,
         string memory uri,
         uint256 _fundingGoal,
         uint256 _durationTime
@@ -69,8 +72,10 @@ contract GoEthMe {
 
         fund.id_ = _id;
         fund.title = _title;
+        fund.description = _description;
         fund.fundingGoal = _fundingGoal;
         fund.owner = creator;
+        fund.startTime = block.timestamp;
         fund.durationTime = _durationTime + block.timestamp;
         fund.nftAddress = new RewardsNft(_title, "RFT");
         fund.tokenUri = uri;
@@ -153,5 +158,9 @@ contract GoEthMe {
 
     function getfunder(uint _ID) external view returns (GoFund memory goFund) {
         goFund = funder[_ID];
+    }
+
+    function getAllCampaignsCount() external view returns (uint) {
+        return id;
     }
 }
