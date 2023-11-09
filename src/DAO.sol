@@ -29,6 +29,8 @@ contract GofundmeDAO {
     uint votingTime;
     uint _time;
 
+    GoFund[] public activeProposals;
+
     struct DAOTime {
         uint daovotetime;
     }
@@ -108,6 +110,7 @@ contract GofundmeDAO {
         DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
+        fund.id_ = _id;
         fund.title = _title;
         fund.description = _description;
         fund.fundingGoal = _fundingGoal;
@@ -116,6 +119,26 @@ contract GofundmeDAO {
         fund.isActive = true;
         fund.tokenUri = imageUrl;
         time.daovotetime = votingTime + block.timestamp;
+
+        // push to the active proposals
+        activeProposals.push(
+            GoFund(
+                fund.id_,
+                fund.title,
+                fund.description,
+                fund.fundingGoal,
+                fund.owner,
+                fund.startTime,
+                fund.durationTime,
+                fund.isActive,
+                fund.fundingBalance,
+                fund.tokenUri,
+                fund.nftAddress,
+                fund.contributors,
+                fund.yayvotes,
+                fund.nayvotes
+            )
+        );
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
@@ -198,5 +221,9 @@ contract GofundmeDAO {
 
     function getAllProposalCount() external view returns (uint) {
         return id;
+    }
+
+    function getAllProposals() external view returns (GoFund[] memory) {
+        return activeProposals;
     }
 }
