@@ -43,6 +43,8 @@ contract GofundmeDAO {
     error AlreadyVoted();
     error VotingTimeElapsed();
     error NotEligible();
+    error NotDAOMember();
+    error NotAdmin();
     // 0 for yay, 1 for nay
     enum Votes {
         YAY,
@@ -106,8 +108,6 @@ contract GofundmeDAO {
         DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
-        // console2.logAddress(address(goethme));
-        fund.id_ = _id;
         fund.title = _title;
         fund.description = _description;
         fund.fundingGoal = _fundingGoal;
@@ -127,19 +127,13 @@ contract GofundmeDAO {
      */
 
     function vote(uint _id, Votes votes) external {
-        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
+        if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
 
         GoFund storage fund = funder[_id];
         if (funder[_id].isActive != true) revert NotActive();
-        // require(funder[_id].isActive, "No active GoFund campaign with this ID");
         if (hasVoted[msg.sender][_id] != false) revert AlreadyVoted();
-        // require(!hasVoted[msg.sender][_id], "Already voted");
         if (block.timestamp > daotime[_id].daovotetime)
             revert VotingTimeElapsed();
-        // require(
-        //     daotime[_id].daovotetime > block.timestamp,
-        //     "Voting Time Elapsed"
-        // );
 
         hasVoted[msg.sender][_id] = true;
         uint8 numVotes = 1;
@@ -178,11 +172,10 @@ contract GofundmeDAO {
      */
 
     function approveProposal(uint _id) external {
-        require(soulnft.balanceOf(msg.sender) == 1, "Not a DAO member");
-        require(
-            daotime[_id].daovotetime < block.timestamp,
-            "Voting Time In Progress"
-        );
+        if (admin != msg.sender) revert NotAdmin();
+        // require(admin == msg.sender, "Only admin can approve a campaign");
+        if (daotime[_id].daovotetime > block.timestamp)
+            revert VotingInProgress();
 
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
