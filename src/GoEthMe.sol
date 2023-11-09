@@ -30,6 +30,8 @@ contract GoEthMe {
     mapping(uint => mapping(address => uint)) public contribute;
     mapping(uint => mapping(address => bool)) public hasContributed;
 
+    GoFund[] public activeCampaigns;
+
     error InsufficientInput();
     error NotActive();
     error NotActiveCause();
@@ -80,6 +82,26 @@ contract GoEthMe {
         fund.nftAddress = new RewardsNft(_title, "RFT");
         fund.tokenUri = uri;
         fund.isActive = true;
+
+        // push to the active campaigns
+        activeCampaigns.push(
+            GoFund(
+                fund.id_,
+                fund.title,
+                fund.description,
+                fund.fundingGoal,
+                fund.owner,
+                fund.startTime,
+                fund.durationTime,
+                fund.isActive,
+                fund.fundingBalance,
+                fund.tokenUri,
+                fund.nftAddress,
+                fund.contributors,
+                fund.yayvotes,
+                fund.nayvotes
+            )
+        );
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
@@ -162,5 +184,9 @@ contract GoEthMe {
 
     function getAllCampaignsCount() external view returns (uint) {
         return id;
+    }
+
+    function getCampaigns() external view returns (GoFund[] memory) {
+        return activeCampaigns;
     }
 }
