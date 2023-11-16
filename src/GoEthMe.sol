@@ -26,7 +26,15 @@ struct GoFund {
 
 contract GoEthMe {
     uint public id;
+
+    struct Contributors {
+        address contributor;
+        uint balance;
+        uint time;
+    }
+
     mapping(uint => GoFund) funder;
+    mapping(address => mapping(uint => Contributors)) contributors_;
     mapping(uint => mapping(address => uint)) public contribute;
     mapping(uint => mapping(address => bool)) public hasContributed;
 
@@ -94,7 +102,7 @@ contract GoEthMe {
                 fund.startTime,
                 fund.durationTime,
                 fund.isActive,
-                fund.fundingBalance,
+                0,
                 fund.tokenUri,
                 fund.nftAddress,
                 fund.contributors,
@@ -110,13 +118,18 @@ contract GoEthMe {
     /// @param _ID The ID of the campaign to contribute to.
 
     function contributeEth(uint _ID) external payable {
-        if (msg.value <= 0) revert InsufficientInput();
+        if (msg.value <= 0.001 ether) revert InsufficientInput();
         GoFund storage fund = funder[_ID];
         if (fund.isActive != true) revert NotActive();
         if (fund.fundingBalance + msg.value > fund.fundingGoal)
             revert ExceededFundingGoal();
         if (block.timestamp > fund.durationTime) revert NotInDuration();
 
+        contributors_[msg.sender][_ID].time = block.timestamp;
+
+        uint ID_ = _ID - 1;
+
+        activeCampaigns[ID_].fundingBalance += msg.value;
         contribute[_ID][msg.sender] += msg.value;
         fund.fundingBalance += msg.value;
         if (!hasContributed[_ID][msg.sender]) {
@@ -154,11 +167,6 @@ contract GoEthMe {
         emit GetContributedFunds(_ID, false);
     }
 
-    struct Contributors {
-        address contributor;
-        uint balance;
-    }
-
     /// @notice Retrieve a list of contributors and their contribution balances for a campaign.
     /// @param _ID The ID of the campaign to retrieve contributors from.
     /// @return _contributors An array of contributors and their balances.
@@ -173,8 +181,9 @@ contract GoEthMe {
         for (uint i = 0; i < total; i++) {
             address contributor = fund.contributors[i];
             uint amount = contribute[_ID][contributor];
+            uint time = contributors_[contributor][_ID].time;
 
-            _contributors[i] = Contributors(contributor, amount);
+            _contributors[i] = Contributors(contributor, amount, time);
         }
     }
 

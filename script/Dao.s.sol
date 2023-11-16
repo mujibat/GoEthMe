@@ -10,7 +10,7 @@ contract GofundmeDAOScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         GofundmeDAO dao = new GofundmeDAO(
-            0x7Ddf053dD5903CAEf6aF59204A7b58648Fdf70ed,
+            0x0E88826015c8EE5A8551c1B3725affBd544F1712,
             0x8A91F5D0FaC39AB37c4E281a498eb68eA24ae078,
             0xE11FfA003Ad8F330d7F09A1cFf8b4F289979f171
         );

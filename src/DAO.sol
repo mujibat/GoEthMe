@@ -122,22 +122,22 @@ contract GofundmeDAO {
 
         // push to the active proposals
         activeProposals.push(
-            GoFund(
-                fund.id_,
-                fund.title,
-                fund.description,
-                fund.fundingGoal,
-                fund.owner,
-                fund.startTime,
-                fund.durationTime,
-                fund.isActive,
-                fund.fundingBalance,
-                fund.tokenUri,
-                fund.nftAddress,
-                fund.contributors,
-                fund.yayvotes,
-                fund.nayvotes
-            )
+            GoFund({
+                id_: fund.id_,
+                title: fund.title,
+                description: fund.description,
+                fundingGoal: fund.fundingGoal,
+                owner: fund.owner,
+                startTime: fund.startTime,
+                durationTime: fund.durationTime,
+                isActive: fund.isActive,
+                fundingBalance: fund.fundingBalance,
+                tokenUri: fund.tokenUri,
+                nftAddress: fund.nftAddress,
+                contributors: fund.contributors,
+                yayvotes: fund.yayvotes,
+                nayvotes: fund.nayvotes
+            })
         );
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
@@ -196,8 +196,8 @@ contract GofundmeDAO {
 
     function approveProposal(uint _id) external {
         if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
-        if (daotime[_id].daovotetime > block.timestamp)
-            revert VotingInProgress();
+        // if (daotime[_id].daovotetime > block.timestamp)
+        //     revert VotingInProgress();
 
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
