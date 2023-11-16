@@ -158,17 +158,22 @@ contract DAOTest is Helpers {
         vm.stopPrank();
     }
 
-    function testNotAdmin() public {
+    function testNonMemberApproval() public {
         vm.prank(_userB);
-        vm.expectRevert(GofundmeDAO.NotAdmin.selector);
+        vm.expectRevert(GofundmeDAO.NotDAOMember.selector);
         gofundmedao.approveProposal(1);
     }
 
     function testVotingInProgress() public {
+        vm.startPrank(Admin);
+        Token.safeMint(members);
+        vm.stopPrank();
+
         vm.startPrank(_userA);
         gofundmedao.createGofundme("jjj", "testing", 5 ether, 86400, "http");
         vm.stopPrank();
-        vm.prank(Admin);
+
+        vm.startPrank(test1);
         vm.expectRevert(GofundmeDAO.VotingInProgress.selector);
         gofundmedao.approveProposal(1);
     }
@@ -177,19 +182,24 @@ contract DAOTest is Helpers {
         vm.startPrank(_userA);
         gofundmedao.createGofundme("jjj", "testing", 5 ether, 86400, "http");
         vm.stopPrank();
-        vm.prank(Admin);
+
+        vm.startPrank(Admin);
         Token.safeMint(members);
         vm.stopPrank();
+
         vm.startPrank(test1);
         gofundmedao.vote(1, vote_);
         vm.stopPrank();
+
         vm.startPrank(test2);
         gofundmedao.vote(1, vote_);
         vm.stopPrank();
+
         vm.startPrank(test3);
         gofundmedao.vote(1, vote_);
         vm.stopPrank();
-        vm.prank(Admin);
+
+        vm.startPrank(test4);
         vm.warp(2 days);
         gofundmedao.approveProposal(1);
     }
