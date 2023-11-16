@@ -136,11 +136,8 @@ contract GoEthMe {
             fund.contributors.push(msg.sender);
             hasContributed[_ID][msg.sender] = true;
         }
-        if (IERC721(address(fund.nftAddress)).balanceOf(msg.sender) == 0) {
-            RewardsNft(address(fund.nftAddress))._safeMint(
-                fund.owner,
-                fund.tokenUri
-            );
+        if (fund.nftAddress.balanceOf(msg.sender) == 0) {
+            fund.nftAddress._safeMint(msg.sender, fund.tokenUri);
         }
 
         emit ContributeEth(
