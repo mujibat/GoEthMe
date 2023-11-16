@@ -12,7 +12,7 @@ interface ISoulNft {
 
     function showIds(address _member) external view returns (uint);
 
-     function showMembers() external view returns(address[] memory);
+    function showMembers() external view returns (address[] memory);
 }
 
 /**
@@ -28,6 +28,8 @@ contract GofundmeDAO {
     address admin;
     uint votingTime;
     uint _time;
+
+    GoFund[] public activeProposals;
 
     struct DAOTime {
         uint daovotetime;
@@ -94,6 +96,7 @@ contract GofundmeDAO {
 
     function createGofundme(
         string memory _title,
+        string memory _description,
         uint256 _fundingGoal,
         uint256 _durationTime,
         string memory imageUrl
@@ -107,15 +110,35 @@ contract GofundmeDAO {
         DAOTime storage time = daotime[_id];
         GoFund storage fund = funder[_id];
 
-        
-
+        fund.id_ = _id;
         fund.title = _title;
+        fund.description = _description;
         fund.fundingGoal = _fundingGoal;
         fund.owner = msg.sender;
         fund.durationTime = _durationTime;
         fund.isActive = true;
         fund.tokenUri = imageUrl;
         time.daovotetime = votingTime + block.timestamp;
+
+        // push to the active proposals
+        activeProposals.push(
+            GoFund({
+                id_: fund.id_,
+                title: fund.title,
+                description: fund.description,
+                fundingGoal: fund.fundingGoal,
+                owner: fund.owner,
+                startTime: fund.startTime,
+                durationTime: fund.durationTime,
+                isActive: fund.isActive,
+                fundingBalance: fund.fundingBalance,
+                tokenUri: fund.tokenUri,
+                nftAddress: fund.nftAddress,
+                contributors: fund.contributors,
+                yayvotes: fund.yayvotes,
+                nayvotes: fund.nayvotes
+            })
+        );
 
         emit CreateGofundme(_id, _title, _fundingGoal, _durationTime);
     }
@@ -127,14 +150,14 @@ contract GofundmeDAO {
      */
 
     function vote(uint _id, Votes votes) external {
-        if(soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
+        if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
 
         GoFund storage fund = funder[_id];
         if (funder[_id].isActive != true) revert NotActive();
         if (hasVoted[msg.sender][_id] != false) revert AlreadyVoted();
         if (block.timestamp > daotime[_id].daovotetime)
             revert VotingTimeElapsed();
-     
+
         hasVoted[msg.sender][_id] = true;
         uint8 numVotes = 1;
 
@@ -148,22 +171,21 @@ contract GofundmeDAO {
     }
 
     function removeMember() external {
-        if(msg.sender != admin) revert OnlyAdmin();
-        if(_time > block.timestamp) revert NotYetTime();
-             _time = block.timestamp + 30 days;
-              
-         require(id > 1, "cannot remove");
+        if (msg.sender != admin) revert OnlyAdmin();
+        if (_time > block.timestamp) revert NotYetTime();
+        _time = block.timestamp + 30 days;
+
+        require(id > 1, "cannot remove");
         uint removeCriteria = (70 * id) / 100;
         address[] memory m = soulnft.showMembers();
-        for (uint i = 0; i < m.length;  i++) {
+        for (uint i = 0; i < m.length; i++) {
             address daoMembers = m[i];
 
-            if (memberVotes[daoMembers] < removeCriteria)  {
+            if (memberVotes[daoMembers] < removeCriteria) {
                 uint id_ = soulnft.showIds(daoMembers);
                 soulnft.burn(id_);
                 emit MemberRemoved(id_);
             }
-
         }
     }
 
@@ -173,13 +195,12 @@ contract GofundmeDAO {
      */
 
     function approveProposal(uint _id) external {
-        if(admin != msg.sender) revert NotAdmin();
-        require(admin == msg.sender, "Only admin can approve a campaign");
-        if(daotime[_id].daovotetime > block.timestamp) revert VotingInProgress();
-       
+        if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
+        // if (daotime[_id].daovotetime > block.timestamp)
+        //     revert VotingInProgress();
 
         GoFund storage fund = funder[_id];
-        // require(funder[_id].isActive, "No active GoFund campaign with this ID");
+        require(funder[_id].isActive, "No active GoFund campaign with this ID");
 
         funder[_id].isActive = false;
 
@@ -188,6 +209,7 @@ contract GofundmeDAO {
             goethme.createGofundme(
                 funder[_id].owner,
                 funder[_id].title,
+                funder[_id].description,
                 funder[_id].tokenUri,
                 funder[_id].fundingGoal,
                 funder[_id].durationTime
@@ -195,5 +217,13 @@ contract GofundmeDAO {
         }
 
         emit ApprovedProposal(_id, funder[_id].title);
+    }
+
+    function getAllProposalCount() external view returns (uint) {
+        return id;
+    }
+
+    function getAllProposals() external view returns (GoFund[] memory) {
+        return activeProposals;
     }
 }
