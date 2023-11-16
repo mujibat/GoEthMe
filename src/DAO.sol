@@ -196,8 +196,8 @@ contract GofundmeDAO {
 
     function approveProposal(uint _id) external {
         if (soulnft.balanceOf(msg.sender) != 1) revert NotDAOMember();
-        // if (daotime[_id].daovotetime > block.timestamp)
-        //     revert VotingInProgress();
+        if (daotime[_id].daovotetime > block.timestamp)
+            revert VotingInProgress();
 
         GoFund storage fund = funder[_id];
         require(funder[_id].isActive, "No active GoFund campaign with this ID");
