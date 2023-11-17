@@ -11,12 +11,12 @@ contract WildLifeGuardianTokenScript is Script {
 
         WildLifeGuardianToken Token = new WildLifeGuardianToken(
             0x8A91F5D0FaC39AB37c4E281a498eb68eA24ae078,
-            "https://lavender-underground-monkey-111.mypinata.cloud/ipfs/QmfToDCX5to1KqEuKJczvqFQ8qwe4XniN5qT3vcsUbVP9M"
+            "ipfs://QmfToDCX5to1KqEuKJczvqFQ8qwe4XniN5qT3vcsUbVP9M"
         );
 
         vm.stopBroadcast();
     }
 }
 
-// OWNER: 0x8A91F5D0FaC39AB37c4E281a498eb68eA24ae078
-// WILDLIFE CONTRACT: 0xE11FfA003Ad8F330d7F09A1cFf8b4F289979f171
+// ADMIN: 0x8A91F5D0FaC39AB37c4E281a498eb68eA24ae078
+// WILDLIFE CONTRACT: 0xEF301a98bef1f93C4D2F03122b59410f7a72eF3e

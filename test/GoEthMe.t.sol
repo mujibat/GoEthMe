@@ -96,6 +96,10 @@ contract GoEthMeTest is Helpers {
 
         goeth.contributeEth{value: 2 ether}(_ID);
         assertEq(goeth.getfunder(_ID).nftAddress.balanceOf(_userB), 1);
+
+        vm.startPrank(_userA);
+        vm.deal(_userA, 3 ether);
+        goeth.contributeEth{value: 2 ether}(_ID);
     }
 
     function testNotActiveFunds() public {

@@ -226,4 +226,12 @@ contract GofundmeDAO {
     function getAllProposals() external view returns (GoFund[] memory) {
         return activeProposals;
     }
+
+    function resetVotePeriod(uint _newTime) external {
+        votingTime = _newTime;
+    }
+
+    function getVoteTime(uint id_) external view returns (DAOTime memory) {
+        return daotime[id_];
+    }
 }
