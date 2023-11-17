@@ -12,9 +12,9 @@ contract RewardsNft is ERC721, ERC721URIStorage {
     ) ERC721(_name, _symbol) {}
 
     function _safeMint(address contributor, string memory _tokenUri) external {
-        uint256 tokenId = tokenIdCounter + 1;
-        _safeMint(contributor, tokenId);
-        _setTokenURI(tokenId, _tokenUri);
+        _safeMint(contributor, tokenIdCounter);
+        _setTokenURI(tokenIdCounter, _tokenUri);
+        tokenIdCounter++;
     }
 
     // functions that needs to be overriden because i used the ERC721URIStorage extension

@@ -2,17 +2,17 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "../src/GoEthMe.sol";
+import "../src/RewardsNft.sol";
 
-contract GoEthMeScript is Script {
+contract RewardsNftScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        GoEthMe fund = new GoEthMe();
+        RewardsNft NFT = new RewardsNft("REWARDS", "DRT");
 
         vm.stopBroadcast();
     }
 }
 
-// GOETHME CONTRACT: 0x8112bb06138Be983465c4100ea3c358Df18B6f1a
+// DAO CONTRACT: 0xdb942f2ea6492757739d70aacd31ecd9476448fe
