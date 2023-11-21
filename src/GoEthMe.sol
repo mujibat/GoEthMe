@@ -195,4 +195,8 @@ contract GoEthMe {
     function getCampaigns() external view returns (GoFund[] memory) {
         return activeCampaigns;
     }
+
+    function getStatus(uint _ID) external view returns (bool) {
+        return funder[_ID].isActive;
+    }
 }
