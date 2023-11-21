@@ -1,0 +1,32 @@
+/*-----------------------------------*\
+  #PARTNER
+\*-----------------------------------*/
+
+.partner {
+  background-color: var(--baby-powder);
+}
+
+.partner .container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 50px;
+}
+
+.partner-logo:is(:hover, :focus) .color,
+.partner-logo .gray {
+  display: block;
+}
+
+@media (min-width: 1200px) {
+  .partner .container {
+    justify-content: space-evenly;
+  }
+}
+
+@media (max-width: 768px) {
+  .partner {
+    margin-top: 1rem;
+  }
+}

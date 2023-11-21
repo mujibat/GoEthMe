@@ -1,0 +1,117 @@
+import { useContract, useContractWrite } from "@thirdweb-dev/react";
+import { utils } from "ethers";
+import { useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import ConfettiExplosion from "react-confetti-explosion";
+import { useNavigate } from "react-router-dom";
+import { shortenAccount } from "../utils";
+import SuccessModal from "./SucessModal";
+function Contribute({
+  open,
+  onClose,
+  campaignTitle,
+  owner,
+  campaignId,
+  contractAddress,
+  abi,
+}) {
+  const { contract } = useContract(contractAddress, abi);
+  const navigate = useNavigate();
+  const {
+    mutateAsync: contributeCall,
+    isLoading,
+    error,
+  } = useContractWrite(contract, "contributeEth");
+  const [amount, setAmount] = useState("");
+  const [confettiCelebration, setConfettiCelebration] = useState(false);
+
+  const [proofModal, setProofModal] = useState(false);
+
+  const handleInput = (e) => {
+    const value = e.target.value;
+    setAmount(value);
+  };
+
+  if (!open) return null;
+
+  async function proofOfDonation() {
+    if (!address) {
+      toast.error("Connect Wallet to Contribute to a campaign");
+    } else {
+      setProofModal(true);
+    }
+  }
+
+  return (
+    <>
+      <Toaster />
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 max-w-sm">
+          <h3 className="text-lg font-bold text-center mb-4 mt-0 pt-0">
+            Contribute to {campaignTitle} campaign
+          </h3>
+          <p className="text-sm text-pink-500 text-center mb-4">
+            Created by {shortenAccount(owner)}
+          </p>
+          <input
+            type="text"
+            value={amount}
+            onChange={handleInput}
+            className="border p-2 w-4/5"
+          />
+          <span className="text-xl text-gray-500 pl-5">ETH</span>
+          <div className="flex justify-around pt-5">
+            <button
+              className="bg-red-500 text-white font-xl rounded-lg p-3 px-4"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-purple-500 text-white font-xl rounded-lg p-3 px-4"
+              onClick={async () => {
+                toast.loading("Contributing to Campaign...", {
+                  id: 2,
+                });
+                try {
+                  await contributeCall({
+                    args: [campaignId],
+                    overrides: {
+                      value: utils.parseEther(amount.toString()),
+                      gasLimit: 1000000,
+                    },
+                  });
+                  toast.success("Contributed Succesfully", {
+                    id: 2,
+                  });
+                  setConfettiCelebration(true);
+                  onClose();
+                  setAmount("");
+                  setTimeout(() => {
+                    setProofModal(true);
+                    // Code to run
+                    // navigate("/details");
+                  }, 2000);
+                } catch (error) {
+                  toast.error("Error contributing to campaign campaign.", {
+                    id: 2,
+                  });
+                  console.error(error);
+                }
+              }}
+            >
+              Contribute
+            </button>
+            {/* {proofModal && <ConfettiExplosion />} */}
+          </div>
+          {proofModal && (
+            // Render your SuccessModal component here
+            <SuccessModal onClose={() => setProofModal(false)} />
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default Contribute;
