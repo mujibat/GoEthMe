@@ -234,4 +234,16 @@ contract GofundmeDAO {
     function getVoteTime(uint id_) external view returns (DAOTime memory) {
         return daotime[id_];
     }
+
+    function getYayVotes(uint id_) external view returns (uint) {
+        return funder[id_].yayvotes;
+    }
+
+    function getNayVotes(uint id_) external view returns (uint) {
+        return funder[id_].nayvotes;
+    }
+
+    function getStatus(uint id_) external view returns (bool) {
+        return funder[id_].isActive;
+    }
 }
